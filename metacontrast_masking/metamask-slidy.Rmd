@@ -1,0 +1,151 @@
+---
+title: "CogLab Data Presentation"
+subtitle: "Metacontrast Masking"
+author: Jamie Daniels & Shannon McCarthy
+date: February 14, 2019
+output: slidy_presentation
+---
+Intro
+===
+
+- point 1
+  - subpoint 
+  
+Background 
+===
+
+- Visual perception is a process that can be interupted or blocked by the introduction of a mask.
+  - A mask is a brief stimuli that disrupts the perception of the target stimuli. 
+  - 
+- The purpose of this experiment is to have participants focus on the fixation point at the center of the screen and determine the position of the target stimuli (a retangle). 
+- Three other squares will appear around the fixation point in addition to the rectangle 
+- Each trial will have a box drawn around the four stimuli
+- The time between the presentation of the stimuli and the box drawn will vary between trials
+-Subjects indicate the location of the rectangle (top left, top right, bottom left, or bottom right)
+
+Methods
+===
+
+**Variables of Interest**
+
+Independent Variables      | Dependent Variable               | Constant
+---------------------------|----------------------------------|-----------------
+Stimulus onset asynchrony  | Proportion of correct resposes   | Fixation point 
+Horizontal object position |                                  | 
+Vertical object position   |                                  | 
+
+
+**Participants**
+
+- 77 undergraduate students ages (17-25)
+- Males and Females 
+- The students participated in this lab as part of the labratory in sensory processing class. 
+
+Methods
+===
+
+**Equipment**
+
+- Web Browser
+- Computer or Tablet 
+- LCD screen 
+- Working internet connection
+- keyboard/mouse (touchscreen capability if tablet)
+
+Methods
+===
+
+**Procedures** 
+
+- Participants look at the fixation point located at the middle of the screen
+- Trails are self-initiated, press the "start next trial" button to begin a new trial, press the "redo trial" button redo a trial.
+- In each 
+
+
+Data Wrangling
+===
+
+```{r setup, include=FALSE}
+#knitr::opts_chunk$set(echo = FALSE)
+
+```
+
+Data Wrangling
+===
+
+```{r setup_rmd, echo=TRUE, warning=FALSE, message=FALSE}
+library("tidyverse")
+library("forcats")
+
+data_file <-"mmask_all.csv"
+
+data_set <- read_csv(ifelse(!file.exists(data_file),
+                            paste("./CogLab_reports/coglab_pres/",
+                                  data_file,sep="/"),data_file))
+
+```
+
+Data Wrangling 
+===
+
+```{r soa_count, echo=TRUE}
+
+mask_acc<-data_set %>%
+  group_by(randomGator,SOA) %>%
+  count(Accuracy) %>%
+  mutate(prop = prop.table(n)) # Filled in missing conmbinations of Accuracy, Target, SOA
+
+
+```
+
+Data Wrangling
+===
+
+```{r subj_avg_grp, echo=TRUE}
+
+maska <- mask_acc %>%
+  group_by(randomGator) %>%
+  complete(Accuracy, SOA, fill = list(n = 0,prop = 0))
+
+maska_grp <- maska %>% 
+  group_by(Accuracy, SOA) %>% 
+  summarise(sd=sd(prop),avg=mean(prop),ymin=avg-sd,ymax=avg+sd)
+
+
+```
+
+Results
+===
+
+```{r group_plot1, echo=TRUE, warning=FALSE}
+
+ggplot(maska_grp %>% filter(Accuracy== 1),aes(x=SOA, y=avg, group= Accuracy)) +
+  geom_line(size=2,color="royalblue") +
+  geom_point(size = 3,color="royalblue") +
+  geom_errorbar(aes(y=avg,ymin = ymin, ymax = ymax),width=0.7,color="royalblue")+
+  scale_x_continuous(breaks = c(0,30,60,90,120,150,180))+
+  scale_y_continuous("Proportion",breaks = c(-0.25,0.0,0.25,0.50,0.75,1.0)) + 
+  theme_bw(24)+coord_cartesian(ylim=c(0,1))
+
+
+```
+
+ - Data from all subjects 
+
+---
+
+```{r echo=FALSE, warning=FALSE}
+
+
+
+```
+
+
+```{r echo=FALSE, fig.asp=0.3, fig.width=11}
+
+
+
+```
+
+Discussion of Results
+=== 
